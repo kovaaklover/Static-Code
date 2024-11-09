@@ -229,153 +229,171 @@ def plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, title_prefix,
 
 AverageVA = np.zeros((13, 20))
 AverageDA = np.zeros((13, 20))
+Flick_Count = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 EffA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 OverflickA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 FlickMissA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-SplitA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-FlickTA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-MicroTA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-TotalTA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-MicroDA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-CountMA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Flick_T = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Flick_D = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Flick_V = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Micro_T = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Micro_D = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Micro_V = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Total_T = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Total_D = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Total_V = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+Average_T = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+D1 = []
+D2 = []
+D3 = []
+D4 = []
+V1 = []
+V2 = []
+V3 = []
+V4 = []
+DM = []
+VM = []
+
 
 Count = 0
 for i in range(1, len(FlickEnd)):
 
+    # TIME SLICE
+    Time_Slice = np.array(T[FlickEnd[i - 1]:FlickEnd[i]])
+    Time_Slice = Time_Slice - T[FlickEnd[i - 1]]
+
     # DISTANCE SLICE
-    Slicea = np.array(D[FlickEnd[i - 1]:FlickEnd[i]])
-    Slicea = Slicea-D[FlickEnd[i - 1]]
+    Distance_Slice = np.array(D[FlickEnd[i - 1]:FlickEnd[i]])
+    Distance_Slice = Distance_Slice - D[FlickEnd[i - 1]]
 
     # VELOCITY SLICE
-    Sliceb = V[FlickEnd[i - 1]:FlickEnd[i]]
+    Velocity_Slice = V[FlickEnd[i - 1]:FlickEnd[i]]
 
     # X AND Y COORDINATE SLICE
-    Slicec = np.array(X[FlickEnd[i - 1]:FlickEnd[i]])
-    Slicec = Slicec-X[FlickEnd[i - 1]]
-    Sliced = np.array(Y[FlickEnd[i - 1]:FlickEnd[i]])
-    Sliced = Sliced-Y[FlickEnd[i - 1]]
-
-    # TIME SLICE FOR X
-    rangea = np.array(T[FlickEnd[i - 1]:FlickEnd[i]])
-    rangea = rangea - T[FlickEnd[i - 1]]
+    X_Position_Slice = np.array(X[FlickEnd[i - 1]:FlickEnd[i]])
+    X_Position_Slice = X_Position_Slice - X[FlickEnd[i - 1]]
+    Y_Position_Slice = np.array(Y[FlickEnd[i - 1]:FlickEnd[i]])
+    Y_Position_Slice = Y_Position_Slice - Y[FlickEnd[i - 1]]
 
     # CALCULATE FLICK EFFICIENCY
-    Actual_D = D[FlickEnd[i]] - D[FlickEnd[i - 1]]
-    Ideal_D = ((X[FlickEnd[i]] - X[FlickEnd[i - 1]]) ** 2 + (Y[FlickEnd[i]] - Y[FlickEnd[i - 1]]) ** 2) ** 0.5
+    Actual_D = Distance_Slice[-1]
+    Ideal_D = ((X_Position_Slice[-1]) ** 2 + (Y_Position_Slice[-1]) ** 2) ** 0.5
     Effy = Ideal_D / Actual_D
 
     # ITERATE THROUGH RANGE
     Overflick = 0
-    MicroI = 0
-    MicroS = 0
+    Micro_Start = 0
     MicroT = 0
     MicroD = 0
     MicroV = 0
-    for ii in range(1, len(Slicea)-1):
+    for ii in range(1, len(Distance_Slice) - 1):
 
         # OVERFLICK CHECK
-        Current_D = ((Slicec[ii] - Slicec[0]) ** 2 + (Sliced[ii] - Sliced[0]) ** 2) ** 0.5
+        Current_D = ((X_Position_Slice[ii] - X_Position_Slice[0]) ** 2 + (Y_Position_Slice[ii] - Y_Position_Slice[0]) ** 2) ** 0.5
         if Current_D > Ideal_D + Ideal_D*0.01:
             Overflick = 1
 
         # START OF MICRO
-        if MicroI == 0 and Sliceb[ii] <= 20 and Sliceb[ii+1] <= Sliceb[ii] and Slicea[ii] > Slicea[-1]*.5:
+        if Micro_Start == 0 and Velocity_Slice[ii] <= 20 and Velocity_Slice[ii + 1] <= Velocity_Slice[ii] and Distance_Slice[ii] > Distance_Slice[-1]*.5:
 
             # ITERATE TO FIND REAL START
-            for iii in range(ii, len(Slicea)-1):
+            for iii in range(ii, len(Distance_Slice) - 1):
 
                 # IF VELOCITY STARTS GOING UP WE KNOW THE MICRO HAS BEGUN
-                if Sliceb[iii + 1] >= Sliceb[iii]:
-                    MicroS = iii
-                    MicroI = 1
-                    MicroT = rangea[iii]
-                    MicroD = Slicea[iii]
-                    MicroV = Sliceb[iii]
+                if Velocity_Slice[iii + 1] >= Velocity_Slice[iii]:
+                    Micro_Start = iii
+                    MicroT = Time_Slice[iii]
+                    MicroD = Distance_Slice[iii]
+                    MicroV = Velocity_Slice[iii]
                     break
 
     # IF FLICK SEEMS VALID
-    if FlickLT[i - 1] != "" and MicroS > 0:
+    if FlickLT[i - 1] != "" and Micro_Start > 0:
         Count += 1
 
         # CREATE NORMALIZED DATA
-        normalized_array1 = np.array(normalize_to_fixed_points(Sliceb[0:MicroS]))
+        normalized_array1 = np.array(normalize_to_fixed_points(Velocity_Slice[0:Micro_Start]))
         normalized_array1 = normalized_array1 / np.max(normalized_array1)
-        normalized_array2 = np.array(normalize_to_fixed_points(Slicea[0:MicroS]))
+        normalized_array2 = np.array(normalize_to_fixed_points(Distance_Slice[0:Micro_Start]))
         normalized_array2 = normalized_array2 / np.max(normalized_array2)
 
         # CALCULATE HOW FAR THE FLICK MISSED? ASSUMES THE MICRO CAUSES A HIT
-        Missed_D = ((Slicec[MicroS] - Slicec[-1]) ** 2 + (Sliced[MicroS] - Sliced[-1]) ** 2) ** 0.5
+        Missed_D = ((X_Position_Slice[Micro_Start] - X_Position_Slice[-1]) ** 2 + (Y_Position_Slice[Micro_Start] - Y_Position_Slice[-1]) ** 2) ** 0.5
 
         if FlickLT[i-1] == "Short" and FlickT[i-1] == "Right":
             plt.figure(fig_Sright)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Short Right Flicks',
-                        TimeS, maxFlickL*0.4, VelocityS, (0, 10), (-10, 10))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Short Right Flicks',
+                        TimeS, maxFlickL * 0.4, VelocityS, (0, 10), (-10, 10))
             Va = 1
 
         if FlickLT[i-1] == "Short" and FlickT[i-1] == "Left":
             plt.figure(fig_Sleft)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Short Left Flicks',
-                        TimeS, maxFlickL*0.4, VelocityS, (-10, 0), (-10, 10))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Short Left Flicks',
+                        TimeS, maxFlickL * 0.4, VelocityS, (-10, 0), (-10, 10))
             Va = 2
 
         if FlickLT[i-1] == "Short" and FlickT[i-1] == "Up":
             plt.figure(fig_Sup)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Short Up Flicks',
-                        TimeS, maxFlickL*0.4, VelocityS, (-10, 10), (0, 10))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Short Up Flicks',
+                        TimeS, maxFlickL * 0.4, VelocityS, (-10, 10), (0, 10))
             AverageVA += normalized_array1
             Va = 3
 
         if FlickLT[i-1] == "Short" and FlickT[i-1] == "Down":
             plt.figure(fig_Sdown)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Short Down Flicks',
-                        TimeS, maxFlickL*0.4, VelocityS, (-10, 10), (-10, 0))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Short Down Flicks',
+                        TimeS, maxFlickL * 0.4, VelocityS, (-10, 10), (-10, 0))
             Va = 4
 
         if FlickLT[i-1] == "Medium" and FlickT[i-1] == "Right":
             plt.figure(fig_Mright)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Medium Right Flicks',
-                        TimeM, maxFlickL*0.7, VelocityM, (0, 15), (-15, 15))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Medium Right Flicks',
+                        TimeM, maxFlickL * 0.7, VelocityM, (0, 15), (-15, 15))
             Va = 5
 
         if FlickLT[i-1] == "Medium" and FlickT[i-1] == "Left":
             plt.figure(fig_Mleft)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Medium Left Flicks',
-                        TimeM, maxFlickL*0.7, VelocityM, (-15, 0), (-15, 15))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Medium Left Flicks',
+                        TimeM, maxFlickL * 0.7, VelocityM, (-15, 0), (-15, 15))
             Va = 6
 
         if FlickLT[i-1] == "Medium" and FlickT[i-1] == "Up":
             plt.figure(fig_Mup)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Medium Up Flicks',
-                        TimeM, maxFlickL*0.7, VelocityM, (-15, 15), (0, 15))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Medium Up Flicks',
+                        TimeM, maxFlickL * 0.7, VelocityM, (-15, 15), (0, 15))
             Va = 7
 
         if FlickLT[i-1] == "Medium" and FlickT[i-1] == "Down":
             plt.figure(fig_Mdown)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Medium Down Flicks',
-                        TimeM, maxFlickL*0.7, VelocityM, (-15, 15), (-15, 0))
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Medium Down Flicks',
+                        TimeM, maxFlickL * 0.7, VelocityM, (-15, 15), (-15, 0))
             Va = 8
 
         if FlickLT[i-1] == "Long" and FlickT[i-1] == "Right":
             plt.figure(fig_Lright)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Long Right Flicks',
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Long Right Flicks',
                         TimeL, maxFlickL, VelocityL, (0, 25), (-25, 25))
             Va = 9
 
         if FlickLT[i-1] == "Long" and FlickT[i-1] == "Left":
             plt.figure(fig_Lleft)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Long Left Flicks',
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Long Left Flicks',
                         TimeL, maxFlickL, VelocityL, (-25, 0), (-25, 25))
             Va = 10
 
         if FlickLT[i-1] == "Long" and FlickT[i-1] == "Up":
             plt.figure(fig_Lup)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Long Up Flicks',
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Long Up Flicks',
                         TimeL, maxFlickL, VelocityL, (-25, 25), (0, 25))
             Va = 11
 
         if FlickLT[i-1] == "Long" and FlickT[i-1] == "Down":
             plt.figure(fig_Ldown)
-            plot_flicks(Overflick, rangea, Slicea, Sliceb, Slicec, Sliced, Test_Name + ' Long Down Flicks',
+            plot_flicks(Overflick, Time_Slice, Distance_Slice, Velocity_Slice, X_Position_Slice, Y_Position_Slice, Test_Name + ' Long Down Flicks',
                         TimeL, maxFlickL, VelocityL, (-25, 25), (-25, 0))
             Va = 12
 
@@ -384,13 +402,58 @@ for i in range(1, len(FlickEnd)):
         AverageDA[Va][:] += normalized_array2  # Average Flick Distance
         EffA[Va] += Effy  # Efficiency Fraction
         OverflickA[Va] += Overflick  # Overflick Fraction
-        FlickMissA[Va] += (Missed_D/Ideal_D)   # Missed Fraction
-        SplitA[Va] += (rangea[-1] - rangea[MicroS]) / (rangea[-1] - rangea[0])  # Micro Time Fraction
-        FlickTA[Va] += ((Slicea[-1] - Slicea[1]) - (Slicea[-1] - Slicea[MicroS])) / ((rangea[-1] - rangea[1]) - (rangea[-1] - rangea[MicroS]))  # Flick Velocity
-        MicroTA[Va] += (rangea[-1] - rangea[MicroS])  # Micro Time
-        TotalTA[Va] += (rangea[-1] - rangea[1])  # Total Time
-        MicroDA[Va] += (Slicea[-1] - Slicea[MicroS])  # Micro Distance
-        CountMA[Va] += 1
+        FlickMissA[Va] += Missed_D/Ideal_D   # Missed Fraction
+
+        Flick_T[Va] += Time_Slice[Micro_Start + 1] - Time_Slice[1]
+        Flick_D[Va] += Distance_Slice[Micro_Start + 1] - Distance_Slice[1]
+        Flick_V[Va] += Flick_D[Va]/Flick_T[Va]
+
+        if Va in [1, 5, 9]:
+            D1.append(Distance_Slice[Micro_Start + 1] - Distance_Slice[1])
+            V1.append((Distance_Slice[Micro_Start + 1] - Distance_Slice[1])/(Time_Slice[Micro_Start + 1] - Time_Slice[1]))
+
+        elif Va in [2, 6, 10]:
+            D2.append(Distance_Slice[Micro_Start + 1] - Distance_Slice[1])
+            V2.append((Distance_Slice[Micro_Start + 1] - Distance_Slice[1])/(Time_Slice[Micro_Start + 1] - Time_Slice[1]))
+
+        elif Va in [3, 7, 11]:
+            D3.append(Distance_Slice[Micro_Start + 1] - Distance_Slice[1])
+            V3.append((Distance_Slice[Micro_Start + 1] - Distance_Slice[1])/(Time_Slice[Micro_Start + 1] - Time_Slice[1]))
+
+        elif Va in [4, 8, 12]:
+            D4.append(Distance_Slice[Micro_Start + 1] - Distance_Slice[1])
+            V4.append((Distance_Slice[Micro_Start + 1] - Distance_Slice[1])/(Time_Slice[Micro_Start + 1] - Time_Slice[1]))
+
+
+        Micro_T[Va] += Time_Slice[-1] - Time_Slice[Micro_Start]
+        Micro_D[Va] += Distance_Slice[-1] - Distance_Slice[Micro_Start]
+        Micro_V[Va] += Micro_D[Va]/Micro_T[Va]
+
+        DM.append(Distance_Slice[-1] - Distance_Slice[Micro_Start])
+        VM.append((Distance_Slice[-1] - Distance_Slice[Micro_Start])/(Time_Slice[-1] - Time_Slice[Micro_Start]))
+
+        Total_T[Va] += Time_Slice[-1] - Time_Slice[1]
+        Total_D[Va] += Distance_Slice[-1] - Distance_Slice[1]
+        Total_V[Va] += Total_D[Va]/Total_T[Va]
+
+        Flick_Count[Va] += 1
+
+        Average_T[1] += 1
+        Average_T[2] += Effy
+        Average_T[3] += Overflick
+        Average_T[4] += Missed_D/Ideal_D
+
+        Average_T[5] += Time_Slice[Micro_Start + 1] - Time_Slice[1]
+        Average_T[6] += Distance_Slice[Micro_Start + 1] - Distance_Slice[1]
+        Average_T[7] += Flick_D[Va]/Flick_T[Va]
+
+        Average_T[8] += Time_Slice[-1] - Time_Slice[Micro_Start]
+        Average_T[9] += Distance_Slice[-1] - Distance_Slice[Micro_Start]
+        Average_T[10] += Micro_D[Va]/Micro_T[Va]
+
+        Average_T[11] += Time_Slice[-1] - Time_Slice[1]
+        Average_T[12] += Distance_Slice[-1] - Distance_Slice[1]
+        Average_T[13] += Total_D[Va]/Total_T[Va]
 
 print('Total Valid Flicks: ' + str(Count))
 
@@ -416,8 +479,8 @@ for fig, title, data1, data2 in figuresA:
     Count += 1
     plt.figure(fig)
     plt.subplot(5, 1, 5)
-    if CountMA[Count] > 0:
-        plt.plot(data1/CountMA[Count], data2/CountMA[Count], color='black')
+    if Flick_Count[Count] > 0:
+        plt.plot(data1 / Flick_Count[Count], data2 / Flick_Count[Count], color='black')
     plt.title(f"{Test_Name} Average Profile for {title}")
     plt.xlim(0, None)
     plt.ylim(0, None)
@@ -452,16 +515,83 @@ plt.xlabel('Distance (in)')
 plt.ylabel('Velocity (in/s)')
 fig_G.savefig(Test_Name + " Velocity vs Distance.png")
 
+fig_H = plt.figure(figsize=(12, 31))
+plt.subplot(5, 1, 1)
+plt.plot(D1, V1, color='black', marker='*', linestyle='none')
+slope, intercept = np.polyfit(np.array(D1), np.array(V1), 1)
+y_trend = slope * np.array(D1) + intercept
+plt.plot(D1, y_trend, color="red", label=f"Trend Line: y = {slope:.2f}x + {intercept:.2f}")
+plt.legend()
+plt.title('Right Flick Velocity vs Distance')
+plt.xlim(0, None)
+plt.ylim(0, None)
+plt.xlabel('Distance (in)')
+plt.ylabel('Velocity (in/s)')
+
+plt.subplot(5, 1, 2)
+plt.plot(D2, V2, color='black', marker='*', linestyle='none')
+slope, intercept = np.polyfit(np.array(D2), np.array(V2), 1)
+y_trend = slope * np.array(D2) + intercept
+plt.plot(D2, y_trend, color="red", label=f"Trend Line: y = {slope:.2f}x + {intercept:.2f}")
+plt.legend()
+plt.title('Left Flick Velocity vs Distance')
+plt.xlim(0, None)
+plt.ylim(0, None)
+plt.xlabel('Distance (in)')
+plt.ylabel('Velocity (in/s)')
+
+plt.subplot(5, 1, 3)
+plt.plot(D3, V3, color='black', marker='*', linestyle='none')
+slope, intercept = np.polyfit(np.array(D3), np.array(V3), 1)
+y_trend = slope * np.array(D3) + intercept
+plt.plot(D3, y_trend, color="red", label=f"Trend Line: y = {slope:.2f}x + {intercept:.2f}")
+plt.legend()
+plt.title('Up Flick Velocity vs Distance')
+plt.xlim(0, None)
+plt.ylim(0, None)
+plt.xlabel('Distance (in)')
+plt.ylabel('Velocity (in/s)')
+
+plt.subplot(5, 1, 4)
+plt.plot(D4, V4, color='black', marker='*', linestyle='none')
+slope, intercept = np.polyfit(np.array(D4), np.array(V4), 1)
+y_trend = slope * np.array(D4) + intercept
+plt.plot(D4, y_trend, color="red", label=f"Trend Line: y = {slope:.2f}x + {intercept:.2f}")
+plt.legend()
+plt.title('Down Flick Velocity vs Distance')
+plt.xlim(0, None)
+plt.ylim(0, None)
+plt.xlabel('Distance (in)')
+plt.ylabel('Velocity (in/s)')
+
+plt.subplot(5, 1, 5)
+plt.plot(DM, VM, color='black', marker='*', linestyle='none')
+slope, intercept = np.polyfit(np.array(DM), np.array(VM), 1)
+y_trend = slope * np.array(DM) + intercept
+plt.plot(DM, y_trend, color="red", label=f"Trend Line: y = {slope:.2f}x + {intercept:.2f}")
+plt.legend()
+plt.title('Micro Velocity vs Distance')
+plt.xlim(0, None)
+plt.ylim(0, None)
+plt.xlabel('Distance (in)')
+plt.ylabel('Velocity (in/s)')
+fig_H.savefig(Test_Name + " Flick Velocity vs Distance.png")
+
 # RESULT PROCESSING AND PRINTING TO EXCEL FILE
-header = ['Direction', 'Count', 'Average Efficiency', 'Overflick Fraction', 'Average Initial Flick Miss Distance Fraction', 'Micro Time Fraction', 'Average Flick Velocity (in/s)', 'Average Micro Time (s)', 'Average Total Time (s)', 'Average Micro Distance (in)']
+header = ['Direction', 'Count', 'Average Efficiency', 'Overflick Fraction', 'Average Initial Flick Miss Distance Fraction', 'Flick T (s)', 'Flick D (in)', 'Flick V (in/s)', 'Micro T (s)', 'Micro D (in)', 'Micro V (in/s)', 'Total T (s)', 'Total D (in)', 'Total V (in/s)']
 direction = ['', 'Short Right', 'Short Left', 'Short Up', 'Short Down', 'Medium Right', 'Medium Left', 'Medium Up', 'Medium Down', 'Long Right', 'Long Left', 'Long Up', 'Long Down']
 rows = []
 for i in range(1, 13):  # Append data to rows
-    if CountMA[i] > 0:
-        rows.append([direction[i], CountMA[i], round(EffA[i] / CountMA[i], 3), round(OverflickA[i] / CountMA[i], 3),
-                     round(FlickMissA[i] / CountMA[i], 3), round(SplitA[i] / CountMA[i], 3), round(FlickTA[i] / CountMA[i], 3),
-                     round(MicroTA[i] / CountMA[i], 3), round(TotalTA[i] / CountMA[i], 3),
-                     round(MicroDA[i] / CountMA[i], 3)])
+    if Flick_Count[i] > 0:
+        rows.append([direction[i], Flick_Count[i], round(EffA[i] / Flick_Count[i], 3), round(OverflickA[i] / Flick_Count[i], 3), round(FlickMissA[i] / Flick_Count[i], 3),
+                     round(Flick_T[i] / Flick_Count[i], 3), round(Flick_D[i] / Flick_Count[i], 3), round(Flick_V[i] / Flick_Count[i], 3),
+                     round(Micro_T[i] / Flick_Count[i], 3), round(Micro_D[i] / Flick_Count[i], 3), round(Micro_V[i] / Flick_Count[i], 3),
+                     round(Total_T[i] / Flick_Count[i], 3), round(Total_D[i] / Flick_Count[i], 3), round(Total_V[i] / Flick_Count[i], 3)])
+
+rows.append(['Total', Average_T[1], round(Average_T[2] / Average_T[1], 3), round(Average_T[3] / Average_T[1], 3), round(Average_T[4] / Average_T[1], 3),
+                     round(Average_T[5] / Average_T[1], 3), round(Average_T[6] / Average_T[1], 3), round(Average_T[7] / Average_T[1], 3),
+                     round(Average_T[8] / Average_T[1], 3), round(Average_T[9] / Average_T[1], 3), round(Average_T[10] / Average_T[1], 3),
+                     round(Average_T[11] / Average_T[1], 3), round(Average_T[12] / Average_T[1], 3), round(Average_T[13] / Average_T[1], 3)])
 
 with open(Test_Name + ' Data.csv', 'w', newline='') as file:  # Write the header and data to the CSV file
     writer = csv.writer(file)
@@ -470,7 +600,7 @@ with open(Test_Name + ' Data.csv', 'w', newline='') as file:  # Write the header
 
 # with open(Test_Name + ' Data.csv', 'w', newline='') as csvfile:
 #    csvwriter = csv.writer(csvfile)
-#    csvwriter.writerow(["T (sec)", "X (in)", "Y (in)", "D (in)", "V (in/s)", "A (in/s^2)",  "Click"])
+#    csvwriter.writerow(["T (sec)", "X (in)", "Y (in)", "D (in)", "V (in/s)"])
 #    for i in range(0, len(T)):
-#        csvwriter.writerow([T[i], X[i], Y[i], D[i], V[i], A[i], Clicks[i]])
+#        csvwriter.writerow([T[i], X[i], Y[i], D[i], V[i]])
 
